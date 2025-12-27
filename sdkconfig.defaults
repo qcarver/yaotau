@@ -1,0 +1,7 @@
+# Keep defaults minimal; configure Wi-Fi + server in menuconfig.
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
+
+# Enable OTA features and HTTPS OTA component deps (you can switch to plain HTTP OTA too).
+CONFIG_ESP_HTTPS_OTA=y
+CONFIG_ESP_HTTP_CLIENT_ENABLE_HTTPS=y

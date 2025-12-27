@@ -1,0 +1,37 @@
+menu "yaotau (yet another over-the-air updater)"
+
+config YAOTAU_ENABLE
+    bool "Enable yaotau at startup"
+    default y
+
+config YAOTAU_WIFI_SSID
+    string "WiFi SSID"
+    default ""
+
+config YAOTAU_WIFI_PASSWORD
+    string "WiFi Password"
+    default ""
+
+config YAOTAU_WIFI_MAX_RETRY
+    int "WiFi connect retries"
+    default 8
+    range 0 50
+
+config YAOTAU_SERVER_VERSION_URL
+    string "URL to version.json"
+    default "http://192.168.1.98:8070/version.json"
+    help
+        Example: http://host:8070/version.json
+
+config YAOTAU_HTTP_TIMEOUT_MS
+    int "HTTP timeout (ms)"
+    default 5000
+    range 1000 60000
+
+config YAOTAU_IMAGE_MAX_BYTES
+    int "Max image size to accept (bytes)"
+    default 1100000
+    help
+        Safety guard for ~1MB OTA slots. Adjust to your partition size.
+
+endmenu
