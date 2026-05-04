@@ -17,6 +17,13 @@ config YAOTAU_WIFI_MAX_RETRY
     default 8
     range 0 50
 
+config YAOTAU_LEAVE_WIFI_RUNNING
+    bool "Leave Wi-Fi running after OTA"
+    default y
+    help
+        Keep the STA connection active after OTA check completes.
+        Disable to disconnect Wi-Fi and save power when OTA is done.
+
 config YAOTAU_SERVER_VERSION_URL
     string "URL to version.json"
     default "http://192.168.1.98:8070/version.json"

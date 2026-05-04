@@ -34,7 +34,11 @@ static void log_banner(void) {
     ESP_LOGI(TAG, "========================================");
 }
 
-static void init_nvs_netif_eventloop(void) {
+/**
+ * Initialize NVS (for OTA state), network interfaces, and event loop.
+ * If something fails, log the error and continue albeit w/o OTA functionality.
+ */
+static void init_nvstore_ntwkiface_and_eventloop(void) {
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_LOGW(TAG, "NVS needs erase: %s", esp_err_to_name(err));
@@ -60,6 +64,14 @@ static void log_partitions(const esp_partition_t *running, const esp_partition_t
              next ? next->size : 0);
 }
 
+static void ota_cleanup_wifi_if_configured(void) {
+#if !defined(CONFIG_YAOTAU_LEAVE_WIFI_RUNNING) || CONFIG_YAOTAU_LEAVE_WIFI_RUNNING
+    ESP_LOGI(TAG, "Keeping WiFi connected for application runtime");
+#else
+    yaotau_wifi_disconnect();
+#endif
+}
+
 esp_err_t ota_helper_init(void) {
 #if !CONFIG_YAOTAU_ENABLE
     return ESP_OK;
@@ -68,7 +80,7 @@ esp_err_t ota_helper_init(void) {
     log_banner();
 
     // Non-fatal design: on failure, log and return so the main app can proceed.
-    init_nvs_netif_eventloop();
+    init_nvstore_ntwkiface_and_eventloop();
 
     const esp_partition_t *running = esp_ota_get_running_partition();
     const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
@@ -88,7 +100,7 @@ esp_err_t ota_helper_init(void) {
     esp_err_t err = yaotau_fetch_server_info(&info);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "Failed fetching version.json: %s", esp_err_to_name(err));
-        yaotau_wifi_disconnect();
+        ota_cleanup_wifi_if_configured();
         return ESP_OK;
     }
 
@@ -98,7 +110,7 @@ esp_err_t ota_helper_init(void) {
 
     if (cmp >= 0) {
         ESP_LOGI(TAG, "No update needed");
-        yaotau_wifi_disconnect();
+        ota_cleanup_wifi_if_configured();
         return ESP_OK;
     }
 
@@ -113,7 +125,7 @@ esp_err_t ota_helper_init(void) {
     err = yaotau_http_ota_to_next_slot(info.image_url);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "OTA failed: %s", esp_err_to_name(err));
-        yaotau_wifi_disconnect();
+        ota_cleanup_wifi_if_configured();
         return ESP_OK;
     }
 

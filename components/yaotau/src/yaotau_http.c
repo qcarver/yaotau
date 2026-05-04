@@ -69,6 +69,15 @@ esp_err_t yaotau_fetch_server_info(yaotau_server_info_t *out) {
     if (!c) return ESP_FAIL;
 
     esp_err_t err = esp_http_client_perform(c);
+    if (err != ESP_OK) {
+        esp_http_client_cleanup(c);
+        if (response_buffer) free(response_buffer);
+        response_buffer = NULL;
+        response_len = 0;
+        response_cap = 0;
+        return err;
+    }
+
     int status = esp_http_client_get_status_code(c);
     esp_http_client_cleanup(c);
 

@@ -26,6 +26,3 @@ target_compile_definitions(${COMPONENT_LIB} PRIVATE
     YAOTAU_PROJECT_NAME="${YAOTAU_PROJECT_NAME}"
     YAOTAU_BUILD_VERSION="${YAOTAU_BUILD_VERSION}"
 )
-
-#insert a message here to output what 
-message(STATUS "Yaotau component: YAOTAU_PROJECT_NAME='${YAOTAU_PROJECT_NAME}', YAOTAU_BUILD_VERSION='${YAOTAU_BUILD_VERSION}'")  
