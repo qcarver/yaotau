@@ -59,9 +59,35 @@ Device expects a JSON document at the configured version URL:
 
 `image_url` must point to a binary compatible with the target and partition layout.
 
+## Flash/RAM footprint
+
+Measured in [pentacubes_c3](https://github.com/qcarver/pentacubes_c3) (ESP32-C3, ESP-IDF v5.2.1):
+
+| Segment | Bytes |
+|---------|------:|
+| Flash text (`.text`) | ~4,386 |
+| Flash read-only (`.rodata`) | ~57 |
+| Static RAM (`.bss`) | ~24 |
+
+The component itself is deliberately small. The bulk of OTA overhead comes from `esp_https_ota`, `esp_http_client`, `mbedtls`, and `esp_wifi`, which your application likely already pulls in.
+
 ## Partition layout
 
-`partitions.csv` defines two OTA app slots (`ota_0`, `ota_1`) each sized `0x100000` (~1 MiB), plus `otadata` and standard NVS/PHY entries.
+The component requires a dual-OTA partition layout. The yaotau repo ships a minimal `partitions.csv` with two `ota_0`/`ota_1` slots sized `0x100000` (~1 MiB) each.
+
+Real applications may need larger OTA slots. For example, pentacubes_c3 uses a `partitions_custom.csv` with 1.3 MiB slots (`0x150000`) to accommodate LVGL and the full pentacube mesh data alongside yaotau and other components:
+
+```csv
+# Name,   Type, SubType, Offset,   Size, Flags
+nvs,      data, nvs,     0x9000,   0x4000,
+otadata,  data, ota,     0xd000,   0x2000,
+phy_init, data, phy,     0xf000,   0x1000,
+ota_0,    app,  ota_0,   0x10000,  0x150000,
+ota_1,    app,  ota_1,   0x160000, 0x150000,
+spiffs,   data, spiffs,  0x2b0000, 0x150000,
+```
+
+Set `CONFIG_PARTITION_TABLE_CUSTOM=y` and point `CONFIG_PARTITION_TABLE_CUSTOM_FILENAME` at your CSV in `sdkconfig.defaults`.
 
 ## Configuration
 
